@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>COVID-19 Map</title>
+    <script src="https://code.highcharts.com/maps/highmaps.js"></script>
+    <script src="https://code.highcharts.com/mapdata/custom/world.js"></script>
+</head>
+
+<body>
+    <div id="container" style="height: 500px"></div>
+
+    <script>
+        // Retrieve data from API
+        fetch('https://api.covid19api.com/summary')
+            .then(response => response.json())
+            .then(data => {
+                // Format data for Highcharts map
+                var mapData = data.Countries.map(country => ({
+                    name: country.Country,
+                    value: country.TotalConfirmed,
+                    code: country.CountryCode
+                }));
+
+                // Create Highcharts map
+                Highcharts.mapChart('container', {
+                    chart: {
+                        map: 'custom/world'
+                    },
+                    title: {
+                        text: 'COVID-19 Cases by Country'
+                    },
+                    series: [{
+                        data: mapData,
+                        name: 'Cases',
+                        joinBy: ['iso-a2', 'code'],
+                        mapData: Highcharts.maps['custom/world'],
+                        tooltip: {
+                            pointFormat: '{point.name}: {point.value}'
+                        }
+                    }]
+                });
+            })
+            .catch(error => console.error(error));
+    </script>
+</body>
+
+</html>
