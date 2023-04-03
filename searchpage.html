@@ -17,30 +17,24 @@
         <div class="card shadow mb-4">
             <!-- Card Header - Dropdown -->
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">BAR</h6>
-                <div class="dropdown no-arrow">
-                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                    </a>
-
-
-                </div>
+                <h6 class="m-0 font-weight-bold text-primary">SEARCH BAR</h6>
             </div>
             <!-- Card Body -->
             <div class="card-body">
-                <!-- <div id="chart"></div> -->
-                <!-- <div class="chart-area"> -->
+
                 <div class="container mt-5">
                     <div class="row">
                         <div class="col-md-12">
                             <div class="card">
                                 <div class="card-body">
                                     <form>
-                                        <div class="mb-3">
-                                            <label for="country" class="form-label">Enter a country name:</label>
-                                            <input type="text" class="form-control" id="country">
+
+                                        <div class="form-group">
+                                            <label for="country">Enter a country name:</label>
+                                            <input type="text" class="form-control" id="country" list="country-list">
+                                            <datalist id="country-list"></datalist>
                                         </div>
-                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                        <button type="submit" id="submit" class="btn btn-primary mt-3">Submit</button>
                                     </form>
                                 </div>
                             </div>
@@ -48,59 +42,404 @@
                     </div>
 
                     <div class="row mt-5">
-                        <div class="col-md-12">
+
+                        <div class="col-md-6">
                             <div class="card">
                                 <div class="card-body">
                                     <div id="chart-container"></div>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="container"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+
+                    <div class="row mt-5">
+
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="chart"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="conchart"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
                 </div>
 
-
-
-                <script>
-                    const form = document.querySelector('form');
-                    form.addEventListener('submit', event => {
-                        event.preventDefault();
-                        const country = document.querySelector('#country').value;
-                        const url = `https://api.covid19api.com/country/${country}/status/confirmed`;
-                        fetch(url)
-                            .then(response => response.json())
-                            .then(data => {
-                                const dates = data.map(item => item.Date.slice(0, 10));
-                                const values = data.map(item => item.Cases);
+            </div>
 
 
 
-                                const chartData = {
-                                    chart: {
-                                        type: 'line'
-                                    },
-                                    title: {
-                                        text: `COVID-19 Cases in ${country}`
-                                    },
-                                    xAxis: {
-                                        categories: dates
-                                    },
-                                    yAxis: {
-                                        title: {
-                                            text: 'Number of Cases'
-                                        }
-                                    },
-                                    series: [{
-                                        name: 'Cases',
-                                        data: values
-                                    }]
-                                };
-                                Highcharts.chart('chart-container', chartData);
-                            })
-                            .catch(error => {
-                                console.error('Error retrieving data:', error);
-                            });
-                    });
-                </script>
+
+
+
+
 </body>
+<script>
+    const form = document.querySelector('form');
+    const searchInput = document.querySelector('#country');
+    const countryInput = document.querySelector('#country');
+
+    let countries = [];
+
+    // Load countries on page load
+    loadCountries();
+
+    // Listen for changes to the search input field
+    searchInput.addEventListener('input', event => {
+        const searchTerm = event.target.value.toLowerCase();
+        const filteredCountries = countries.filter(country => {
+            return country.toLowerCase().includes(searchTerm);
+        });
+        renderCountryOptions(filteredCountries);
+    });
+
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const country = countryInput.value;
+        const url = `https://api.covid19api.com/country/${country}/status/confirmed`;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const dates = data.map(item => item.Date.slice(0, 10));
+                const values = data.map(item => item.Cases);
+
+                const chartData = {
+                    chart: {
+                        type: 'line'
+                    },
+                    title: {
+                        text: `COVID-19 Cases in ${country}`
+                    },
+                    xAxis: {
+                        categories: dates
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Number of Cases'
+                        }
+                    },
+                    series: [{
+                        name: 'Cases',
+                        data: values
+                    }]
+                };
+                Highcharts.chart('chart-container', chartData);
+
+                const charData = {
+                    chart: {
+                        type: 'bar'
+                    },
+                    title: {
+                        text: `COVID-19 Cases in ${country}`
+                    },
+                    xAxis: {
+                        categories: dates
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Number of Cases'
+                        }
+                    },
+                    series: [{
+                        name: 'Cases',
+                        data: values
+                    }]
+                };
+                Highcharts.chart('container', charData);
+
+
+
+
+
+
+            })
+            .catch(error => {
+                console.error('Error retrieving data:', error);
+            });
+    });
+
+
+
+
+
+
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        const country = countryInput.value;
+
+        fetch('https://api.covid19api.com/total/country/' + country)
+            .then(response => response.json())
+            .then(data => {
+
+                var totalCases = data[data.length - 1].Confirmed;
+                var totalDeaths = data[data.length - 1].Deaths;
+                var totalRecoveries = data[data.length - 1].Recovered;
+
+                // Data retrieved from https://netmarketshare.com/
+                Highcharts.chart('chart', {
+                    chart: {
+                        plotBackgroundColor: null,
+                        plotBorderWidth: 0,
+                        plotShadow: false
+                    },
+                    title: {
+                        text: 'COVID-19 Cases <br>' + country,
+                        align: 'center',
+                        verticalAlign: 'middle',
+                        y: 60
+                    },
+                    tooltip: {
+                        pointFormat: '{series.totalcase}: <b>{point.percentage:.1f}%</b>'
+                    },
+                    accessibility: {
+                        point: {
+                            valueSuffix: '%'
+                        }
+                    },
+                    plotOptions: {
+                        pie: {
+                            dataLabels: {
+                                enabled: true,
+                                distance: -50,
+                                style: {
+                                    fontWeight: 'bold',
+                                    color: 'white'
+                                }
+                            },
+                            startAngle: -90,
+                            endAngle: 90,
+                            center: ['50%', '75%'],
+                            size: '110%'
+                        }
+                    },
+                    series: [{
+                        type: 'pie',
+                        name: 'Browser share',
+                        innerSize: '50%',
+                        data: [
+                            ['cases', totalCases],
+                            ['death', totalDeaths],
+                            ['Recoveries', totalRecoveries], {
+                                name: 'Other',
+                                y: 3.77,
+                                dataLabels: {
+                                    enabled: false
+                                }
+                            }
+                        ]
+                    }]
+                });
+
+
+
+
+
+
+
+
+                // Data retrieved from https://gs.statcounter.com/browser-market-share#monthly-202201-202201-bar
+
+                // Create the chart
+                Highcharts.chart('conchart', {
+                    chart: {
+                        type: 'column'
+                    },
+                    title: {
+                        align: 'left',
+                        text: 'COVID-19 Cases <br>' + country,
+                    },
+                    subtitle: {
+                        align: 'left',
+                        text: '. Source: <a href="" target="_blank"></a>'
+                    },
+                    accessibility: {
+                        announceNewData: {
+                            enabled: true
+                        }
+                    },
+                    xAxis: {
+                        type: 'category'
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Total cases,Deaths and Recoveries chart'
+                        }
+
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            borderWidth: 0,
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.y:.1f}cases'
+                            }
+                        }
+                    },
+
+                    tooltip: {
+                        headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
+                        pointFormat: '<span style="color:{point.color}">{point.name}</span>: <b>{point.y:.2f}cases</b> of total<br/>'
+                    },
+
+                    series: [{
+                        name: 'COVID-19',
+                        colorByPoint: true,
+                        data: [{
+                            name: 'totalcase',
+                            y: totalCases,
+                            drilldown: 'totalcase'
+                        }, {
+                            name: 'totaldeaths',
+                            y: totalDeaths,
+                            drilldown: 'totaldeaths'
+                        }, {
+                            name: 'Recoveries',
+                            y: totalRecoveries,
+                            drilldown: null
+                        }]
+                    }],
+                    drilldown: {
+                        breadcrumbs: {
+                            position: {
+                                align: 'right'
+                            }
+                        },
+                        series: [{
+                            name: 'Totalcases',
+                            id: 'Totalcases',
+                            data: [
+                                [
+                                    totalCases
+                                ],
+
+                            ]
+                        }, {
+                            name: 'totaldeaths',
+                            id: 'totaldeaths',
+                            data: [
+                                [
+                                    totalDeaths.Country
+                                ]
+                            ]
+                        }, {
+                            name: 'totalRecoveries',
+                            id: 'totalRecoveries',
+                            data: [
+                                [
+                                    totalRecoveries.Country
+                                ]
+                            ]
+                        }]
+                    }
+                });
+
+
+
+                //    Highcharts.chart('', {
+                //     chart: {
+                //         type: 'column',
+                //         options3d: {
+                //             enabled: true,
+                //             alpha: 10,
+                //             beta: 25,
+                //             depth: 70
+                //         }
+                //     },
+                //     title: {
+                //         text: 'COVID-19 Cases <br>' + country,
+                //         align: 'left'
+                //     },
+                //     subtitle: {
+                //         text: 'Source: ' +
+                //             '<a href="https://www.ssb.no/en/statbank/table/08804/"' +
+                //             'target="_blank"></a>',
+                //         align: 'left'
+                //     },
+                //     plotOptions: {
+                //         column: {
+                //             depth: 25
+                //         }
+                //     },
+                //     xAxis: {
+                //         categories: ['TotalCases', 'Totaldeath', 'TotalRecoveries'],
+                //         labels: {
+                //             skew3d: true,
+                //             style: {
+                //                 fontSize: '16px'
+                //             }
+                //         }
+                //     },
+                //     yAxis: {
+                //         title: {
+                //             text: 'NOK (million)',
+                //             margin: 20
+                //         }
+                //     },
+                //     tooltip: {
+                //         valueSuffix: ' case'
+                //     },
+                //     series: [{
+                //         name: 'Total imports',
+                //         data: [totalCases, totalDeaths, totalRecoveries]
+                //     }]
+                // });
+
+
+
+
+
+
+
+
+            })
+    });;
+
+    function loadCountries() {
+        fetch('https://api.covid19api.com/countries')
+            .then(response => response.json())
+            .then(data => {
+                countries = data.map(item => item.Country);
+                renderCountryOptions(countries);
+            })
+            .catch(error => {
+                console.error('Error retrieving data:', error);
+            });
+    }
+
+    function renderCountryOptions(countries) {
+        let optionsHtml = '';
+        countries.forEach(country => {
+            optionsHtml += `<option value="${country}">${country}</option>`;
+        });
+        document.querySelector('#country-list').innerHTML = optionsHtml;
+    }
+</script>
+
+
+</script>
 
 </html>

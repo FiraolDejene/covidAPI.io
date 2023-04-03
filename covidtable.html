@@ -7,6 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COVID-19 Dashboard</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script type="text/javascript">
         function getData() {
@@ -33,6 +35,33 @@
 
                     const tableBody = document.querySelector("tbody");
                     tableBody.innerHTML = tableRows.join("");
+
+
+
+                    // Add filter search
+                    const searchInput = document.getElementById("searchInput");
+                    searchInput.addEventListener("input", () => {
+                        const searchTerm = searchInput.value.toLowerCase();
+                        const filteredRows = countries.filter(country =>
+                            country.Country.toLowerCase().includes(searchTerm)
+                        );
+                        const filteredTableRows = filteredRows.map(country => {
+                            return `
+                  <tr>
+                    <td>${country.Country}</td>
+                    <td>${country.TotalConfirmed}</td>
+                    <td>${country.TotalDeaths}</td>
+                    <td>${country.TotalRecovered}</td>
+                  </tr>
+                 `;
+                        });
+                        tableBody.innerHTML = filteredTableRows.join("");
+                    });
+
+
+
+
+
                 })
                 .catch(error => {
                     console.error(error);
@@ -53,12 +82,15 @@
             <div class="col-md-6">
                 <div id="global-data-chart"></div>
             </div>
-
-
         </div>
+
 
         <div class="row">
             <div class="col-md-12">
+                <div>
+                    <label class="mt-5 searchInput" for="searchInput">Filter by country:</label>
+                    <input type="text" id="searchInput">
+                </div>
                 <table class="table">
                     <thead>
                         <tr>
